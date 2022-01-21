@@ -1,0 +1,16 @@
+﻿<Window x:Class="CheckersWPF.SubWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:CheckersWPF"
+        mc:Ignorable="d"
+        Title="SubWindow" Height="290.07" Width="542.857">
+    <Grid>
+        <Label Content="Выберите сторону" HorizontalAlignment="Left" Margin="150,90,0,0" VerticalAlignment="Top" Width="252" FontSize="16"/>
+        <RadioButton Content="Черные" Name="B" HorizontalAlignment="Left" Margin="131,143,0,0" VerticalAlignment="Top" FontSize="16" IsChecked="True"/>
+        <RadioButton Content="Белые" Name="W" HorizontalAlignment="Left" Margin="305,143,0,0" VerticalAlignment="Top" FontSize="16"/>
+        <Button Content="Ок" Name ="Accept" HorizontalAlignment="Left" Margin="131,196,0,0" VerticalAlignment="Top" Width="75" FontSize="16" Click="Accept_Click"/>
+        <Button Content="Отмена" HorizontalAlignment="Left" Margin="327,196,0,0" VerticalAlignment="Top" Width="75" Height="25" IsCancel="True"/>
+    </Grid>
+</Window>

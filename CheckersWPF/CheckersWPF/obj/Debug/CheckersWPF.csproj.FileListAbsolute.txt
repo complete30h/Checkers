@@ -1,0 +1,17 @@
+C:\Users\1\source\repos\CheckersWPF\CheckersWPF\bin\Debug\CheckersWPF.exe.config
+C:\Users\1\source\repos\CheckersWPF\CheckersWPF\bin\Debug\CheckersWPF.exe
+C:\Users\1\source\repos\CheckersWPF\CheckersWPF\bin\Debug\CheckersWPF.pdb
+C:\Users\1\source\repos\CheckersWPF\CheckersWPF\obj\Debug\CheckersWPF.csprojAssemblyReference.cache
+C:\Users\1\source\repos\CheckersWPF\CheckersWPF\obj\Debug\MainWindow.g.cs
+C:\Users\1\source\repos\CheckersWPF\CheckersWPF\obj\Debug\App.g.cs
+C:\Users\1\source\repos\CheckersWPF\CheckersWPF\obj\Debug\CheckersWPF_MarkupCompile.cache
+C:\Users\1\source\repos\CheckersWPF\CheckersWPF\obj\Debug\CheckersWPF_MarkupCompile.lref
+C:\Users\1\source\repos\CheckersWPF\CheckersWPF\obj\Debug\MainWindow.baml
+C:\Users\1\source\repos\CheckersWPF\CheckersWPF\obj\Debug\CheckersWPF.g.resources
+C:\Users\1\source\repos\CheckersWPF\CheckersWPF\obj\Debug\CheckersWPF.Properties.Resources.resources
+C:\Users\1\source\repos\CheckersWPF\CheckersWPF\obj\Debug\CheckersWPF.csproj.GenerateResource.cache
+C:\Users\1\source\repos\CheckersWPF\CheckersWPF\obj\Debug\CheckersWPF.csproj.CoreCompileInputs.cache
+C:\Users\1\source\repos\CheckersWPF\CheckersWPF\obj\Debug\CheckersWPF.exe
+C:\Users\1\source\repos\CheckersWPF\CheckersWPF\obj\Debug\CheckersWPF.pdb
+C:\Users\1\source\repos\CheckersWPF\CheckersWPF\obj\Debug\SubWindow.g.cs
+C:\Users\1\source\repos\CheckersWPF\CheckersWPF\obj\Debug\SubWindow.baml

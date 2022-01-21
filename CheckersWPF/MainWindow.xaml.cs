@@ -25,10 +25,12 @@ namespace CheckersWPF
     /// </summary>
     public partial class MainWindow : Window
     {
+        public bool white { get; set; } = true;
         int CountKillW = 0;
         int CountKillB = 0;
         int animIter = 0;
         int animIter2 = 0;
+        bool D = false;
         volatile bool work = true;
         Socket handler;
         Socket sender;
@@ -43,12 +45,14 @@ namespace CheckersWPF
         Button btnS = new Button();
         Button btnC = new Button();
         Button ClearConsole = new Button();
+        Button side = new Button();
         bool mustKill = false;
         Ellipse select;
         Brush selectColor;
         bool ServerBool = false;
         bool CourseWhite = true;
         Ellipse ellipseAnim;
+        bool _white = true;
 
 
         List<string> PointWayStandart = new List<string>();
@@ -64,17 +68,20 @@ namespace CheckersWPF
         {
             InitializeComponent();
             Init();
+            var abc = 1;
         }
         public void Init()
         {
             this.Width = 604;
             this.Height = 438;
-            //this.Closed += new EventHandler(CloseWindow);
+            this.Closed += new EventHandler(CloseWindow);
             this.ResizeMode = ResizeMode.NoResize;
             Board board = new Board();
             rectangles = board.CreateBoard();
             for (int i = 0; i < rectangles.Length; i++)
             {
+                rectangles[i].MouseLeftButtonDown += new MouseButtonEventHandler(RectangleClick);
+                rectangles[i].MouseEnter += new MouseEventHandler(RectangleMouseEnter);
                 MainGrid.Children.Add(rectangles[i]);
             }
             ellipsesW = CreateWhite.Create();
@@ -91,7 +98,7 @@ namespace CheckersWPF
             }
             btnS.Width = 180;
             btnS.Height = 25;
-            btnS.Content = "Сервер";
+            btnS.Content = "Создать";
             btnS.HorizontalAlignment = HorizontalAlignment.Right;
             btnS.VerticalAlignment = VerticalAlignment.Top;
             btnS.Margin = new Thickness(0, 4, 4, 0);
@@ -99,7 +106,7 @@ namespace CheckersWPF
 
             btnC.Width = 180;
             btnC.Height = 25;
-            btnC.Content = "Клиент";
+            btnC.Content = "Присоединиться";
             btnC.HorizontalAlignment = HorizontalAlignment.Right;
             btnC.VerticalAlignment = VerticalAlignment.Top;
             btnC.Margin = new Thickness(0, 32, 4, 0);
@@ -109,36 +116,59 @@ namespace CheckersWPF
             textBox.Height = 24;
             textBox.HorizontalAlignment = HorizontalAlignment.Right;
             textBox.VerticalAlignment = VerticalAlignment.Top;
-            textBox.Margin = new Thickness(0, 60, 4, 0);
+            textBox.Margin = new Thickness(0, 88, 4, 0);
             textBox.Text = "";
 
+            side.Width = 180;
+            side.Height = 25;
+            side.Content = "Выбрать сторону";
+            side.HorizontalAlignment = HorizontalAlignment.Right;
+            side.VerticalAlignment = VerticalAlignment.Top;
+            side.Margin = new Thickness(0, 60, 4, 0);
+            side.Click += new RoutedEventHandler(sideClick);
+
             label.Width = 180;
-            label.Height = 800;
+            label.Height = 600;
             label.HorizontalAlignment = HorizontalAlignment.Right;
             label.VerticalAlignment = VerticalAlignment.Top;
-            label.Margin = new Thickness(0, 86, 4, 0);
+            label.Margin = new Thickness(0, 100, 4, 0);
             label.Text = "";
             label.TextWrapping = TextWrapping.WrapWithOverflow;
-
-            ClearConsole.Width = 180;
-            ClearConsole.Height = 25;
-            ClearConsole.Content = "Очистить консоль";
-            ClearConsole.HorizontalAlignment = HorizontalAlignment.Right;
-            ClearConsole.VerticalAlignment = VerticalAlignment.Bottom;
-            ClearConsole.Margin = new Thickness(0, 0, 4, 4);
-            ClearConsole.Click += new RoutedEventHandler(btnClearClick);
 
             MainGrid.Children.Add(textBox);
             MainGrid.Children.Add(label);
             MainGrid.Children.Add(btnC);
             MainGrid.Children.Add(btnS);
-            MainGrid.Children.Add(ClearConsole);
-
-
-
+            MainGrid.Children.Add(side);
 
         }
 
+        void sideClick(object s, RoutedEventArgs e)
+        {
+            var frm = new SubWindow();
+            frm.Owner = this;
+            frm.ShowDialog();
+
+
+            if (frm.DialogResult == false)
+            {
+                return;
+            }
+            else
+            {
+                //ServerBool = true;
+                _white = white;
+                ip = textBox.Text;
+                if (_white)
+                {
+                    CourseWhite = true;
+                }
+                else
+                {
+                    CourseWhite = false;
+                }
+            }
+        }
 
         void btnClearClick(object s, RoutedEventArgs e)
         {
@@ -157,6 +187,8 @@ namespace CheckersWPF
             try
             {
                 Client("connect");
+                btnS.IsEnabled = false;
+                btnC.IsEnabled = false;
             }
             catch (Exception ex)
             {
@@ -166,11 +198,39 @@ namespace CheckersWPF
 
         void btnSClick(object s, RoutedEventArgs e)
         {
-            ip = textBox.Text;
-            ServerBool = true;
-            thread = new Thread(Server);
-            thread.IsBackground = true;
-            thread.Start();
+
+            //var frm = new SubWindow();
+          //  frm.Owner = this;
+           // frm.ShowDialog();
+           
+
+          //  if (frm.DialogResult == false)
+           // {
+           //     return;
+          //  }
+          //  else
+          //  {
+                ServerBool = true;
+             //   _white = white;
+                ip = textBox.Text;
+                if (_white)
+                {
+                    CourseWhite = true;
+                }
+                else
+                {
+                    CourseWhite = false;
+                }
+                if (thread != null)
+                {
+                   
+                }
+                thread = new Thread(Server);
+                thread.IsBackground = true;
+                thread.Start();
+                btnC.IsEnabled = false;
+                btnS.IsEnabled = false;
+            
         }  // обработчик нажатия кнопки "сервер"
 
         void ChechersClick(object s, MouseButtonEventArgs e)
@@ -178,7 +238,7 @@ namespace CheckersWPF
             mustKill = false;
 
             string[] sp = ((Ellipse)s).Name.Split('_');
-            if (sp[1] == "W" && CourseWhite && ServerBool || sp[1] == "B" && !CourseWhite && !ServerBool)
+            if (sp[1] == "W" && CourseWhite && ServerBool && _white || sp[1] == "B" && CourseWhite && ServerBool && !_white || sp[1] == "B" && !CourseWhite && !ServerBool && !_white || sp[1] == "W" && !CourseWhite && !ServerBool && _white)
             {
                 if (select != null && selectColor != null)
                     select.Fill = selectColor;
@@ -237,8 +297,9 @@ namespace CheckersWPF
 
         void RectangleClick(object s, MouseButtonEventArgs e)
         {
-            if (select != null && select.Name.Split('_')[1] == "W" && CourseWhite ||
-                select != null && select.Name.Split('_')[1] == "B" && !CourseWhite)
+            if (select != null && select.Name.Split('_')[1] == "W" && CourseWhite && _white || select != null && select.Name.Split('_')[1] == "B" && CourseWhite && !_white||
+
+                select != null && select.Name.Split('_')[1] == "W" && !CourseWhite && _white|| select != null && select.Name.Split('_')[1] == "B" && !CourseWhite && !_white)
             {
                 double xRect = 0, yRect = 0, xPoint = 0, yPoint = 0;
                 GetPositionRectangle((Rectangle)s, ref xRect, ref yRect);
@@ -253,7 +314,7 @@ namespace CheckersWPF
                         SendMessage(select.Name + ";" + xRect + "," + yRect);
                         ClearColorRectangles();
                         select.Fill = selectColor;
-                        CourseWhite = !CourseWhite;
+                        //CourseWhite = !CourseWhite;
 
                         if (selectColor != null)
                             select.Fill = selectColor;
@@ -306,131 +367,7 @@ namespace CheckersWPF
                     }
                 }
         } // обработчик события на то, что курсор попал в область квадратика
-
-        void GenerateTable()
-        {
-            double x = 0, y = 0, step = 0;
-            double width = 50, height = 50;
-
-            for (int i = 0; i < rectangles.Length; i++)
-            {
-                if (step == 8)
-                {
-                    step = 0;
-                    x = 0;
-                    y += height;
-                }
-                x = step * width;
-                step++;
-
-                rectangles[i] = new Rectangle();
-                rectangles[i].HorizontalAlignment = HorizontalAlignment.Left;
-                rectangles[i].VerticalAlignment = VerticalAlignment.Top;
-                rectangles[i].Width = width;
-                rectangles[i].Height = height;
-                rectangles[i].Margin = new Thickness(x, y, 0, 0);
-                rectangles[i].Stroke = new SolidColorBrush(Color.FromRgb(0, 0, 0));
-                rectangles[i].Fill = new SolidColorBrush(Color.FromRgb(75, 75, 75));
-                rectangles[i].MouseLeftButtonDown += new MouseButtonEventHandler(RectangleClick);
-                rectangles[i].MouseEnter += new MouseEventHandler(RectangleMouseEnter);
-                MainGrid.Children.Add(rectangles[i]);
-            }
-
-            int t = 0;
-            int step2 = 0;
-            for (int i = 0; i < rectangles.Length; i++)
-            {
-                if (step2 == 8)
-                {
-                    step2 = 0;
-                    t++;
-                }
-                step2++;
-
-                if ((i + t) % 2 == 0)
-                    rectangles[i].Fill = new SolidColorBrush(Color.FromRgb(210, 210, 210));
-            }
-        } // алгоритм создания доски
-
-        void GenerateEllipsesW()
-        {
-            double width = 46, height = 46;
-
-            for (int i = 0; i < 12; i++)
-            {
-                ellipsesW.Add(new Ellipse());
-                ellipsesW[i].HorizontalAlignment = HorizontalAlignment.Left;
-                ellipsesW[i].VerticalAlignment = VerticalAlignment.Top;
-                ellipsesW[i].Width = width;
-                ellipsesW[i].Height = height;
-                ellipsesW[i].Margin = new Thickness(-50, -50, 0, 0);
-                ellipsesW[i].Stroke = new SolidColorBrush(Color.FromRgb(0, 0, 0));
-                ellipsesW[i].Fill = new LinearGradientBrush(Color.FromRgb(255, 255, 255), Color.FromRgb(90, 90, 90), new Point(0, 0.5), new Point(0.5, 1));
-                ellipsesW[i].Name = "c_W_" + i;
-                ellipsesW[i].MouseLeftButtonDown += new MouseButtonEventHandler(ChechersClick);
-                MainGrid.Children.Add(ellipsesW[i]);
-            }
-
-            ellipsesW[0].Margin = new Thickness(52, 2, 0, 0);
-            ellipsesW[1].Margin = new Thickness(152, 2, 0, 0);
-            ellipsesW[2].Margin = new Thickness(252, 2, 0, 0);
-            ellipsesW[3].Margin = new Thickness(352, 2, 0, 0);
-            ellipsesW[4].Margin = new Thickness(2, 52, 0, 0);
-            ellipsesW[5].Margin = new Thickness(102, 52, 0, 0);
-            ellipsesW[6].Margin = new Thickness(202, 52, 0, 0);
-            ellipsesW[7].Margin = new Thickness(302, 52, 0, 0);
-            ellipsesW[8].Margin = new Thickness(52, 102, 0, 0);
-            ellipsesW[9].Margin = new Thickness(152, 102, 0, 0);
-            ellipsesW[10].Margin = new Thickness(252, 102, 0, 0);
-            ellipsesW[11].Margin = new Thickness(352, 102, 0, 0);
-
-            //ellipsesW[0].Margin = new Thickness(202, 352, 0, 0);
-            //ellipsesW[0].Stroke = new LinearGradientBrush(Color.FromRgb(230, 230, 230), Color.FromRgb(170, 170, 170), new Point(0, 0.5), new Point(0.5, 1));
-            //ellipsesW[0].StrokeThickness = 2;
-            //ellipsesW[0].Fill = new LinearGradientBrush(Color.FromRgb(150, 150, 150), Color.FromRgb(190, 190, 190), new Point(0, 0.5), new Point(0.5, 1));
-            //ellipsesW[1].Margin = new Thickness(152, 102, 0, 0);
-
-        }  // расставляет белые
-
-        void GenerateEllipsesB()
-        {
-            double width = 46, height = 46;
-
-            for (int i = 0; i < 12; i++)
-            {
-                ellipsesB.Add(new Ellipse());
-                ellipsesB[i].HorizontalAlignment = HorizontalAlignment.Left;
-                ellipsesB[i].VerticalAlignment = VerticalAlignment.Top;
-                ellipsesB[i].Width = width;
-                ellipsesB[i].Height = height;
-                ellipsesB[i].Margin = new Thickness(-50, -50, 0, 0);
-                ellipsesB[i].Stroke = new SolidColorBrush(Color.FromRgb(0, 0, 0));
-                ellipsesB[i].Fill = new LinearGradientBrush(Color.FromRgb(180, 0, 0), Color.FromRgb(90, 0, 0), new Point(0, 0.5), new Point(0.5, 1));
-                ellipsesB[i].Name = "c_B_" + i;
-                ellipsesB[i].MouseLeftButtonDown += new MouseButtonEventHandler(ChechersClick);
-                MainGrid.Children.Add(ellipsesB[i]);
-            }
-
-            ellipsesB[0].Margin = new Thickness(2, 252, 0, 0);
-            ellipsesB[1].Margin = new Thickness(102, 252, 0, 0);
-            ellipsesB[2].Margin = new Thickness(202, 252, 0, 0);
-            ellipsesB[3].Margin = new Thickness(302, 252, 0, 0);
-            ellipsesB[4].Margin = new Thickness(52, 302, 0, 0);
-            ellipsesB[5].Margin = new Thickness(152, 302, 0, 0);
-            ellipsesB[6].Margin = new Thickness(252, 302, 0, 0);
-            ellipsesB[7].Margin = new Thickness(352, 302, 0, 0);
-            ellipsesB[8].Margin = new Thickness(2, 352, 0, 0);
-            ellipsesB[9].Margin = new Thickness(102, 352, 0, 0);
-            ellipsesB[10].Margin = new Thickness(202, 352, 0, 0);
-            ellipsesB[11].Margin = new Thickness(302, 352, 0, 0);
-
-            //ellipsesB[0].Margin = new Thickness(52, 202, 0, 0);
-            ////ellipsesB[1].Margin = new Thickness(102, 52, 0, 0);
-            //ellipsesB[2].Margin = new Thickness(252, 102, 0, 0);
-            //ellipsesB[3].Margin = new Thickness(252, 202, 0, 0);
-            //ellipsesB[4].Margin = new Thickness(252, 302, 0, 0);
-
-        }  // расставляет красные
+     
 
         void GenerateColorRectangle()
         {
@@ -479,7 +416,7 @@ namespace CheckersWPF
         {
             for (int i = 0; i < rectanglesColor.Count; i++)
             {
-                rectanglesColor[i].Fill = new SolidColorBrush(Color.FromRgb(75, 75, 75));
+                rectanglesColor[i].Fill = new SolidColorBrush(Color.FromRgb(101, 67, 33));
             }
 
             rectanglesColor.Clear();
@@ -538,7 +475,7 @@ namespace CheckersWPF
                 ServerBool = true;
                 CourseWhite = true;
             }
-        }  // переключает ход с белых на красные и наоборот
+        }  // переключает ход с белых на черные и наоборот
 
         void Write(string str)
         {
@@ -557,12 +494,14 @@ namespace CheckersWPF
 
             if (ellipse.StrokeThickness != 2)
             {
+                D = false;
                 GeneratePointWayStandart(ellipse, PointWayStandart);
                 GeneratePointWay(ellipse);
                 GenerateWays(ellipse);
             }
             else
             {
+                D = true;
                 GeneratePointWayStandartD(ellipse, PointWayStandart);
 
                 int[,] desk = new int[8, 8];
@@ -640,7 +579,7 @@ namespace CheckersWPF
                         PointOfCourse.Add(point);
                 }
             }
-
+            
 
 
         } // получаем точки на которые можно походить/ отсюда запускаются остальные алгоритмы нужные для просчета возможных ходов
@@ -937,7 +876,7 @@ namespace CheckersWPF
                     PointWay[i] += GetTypePoint(ellipse, PointWay[i]);
             }
 
-        } // генерирует точки из которых будет собрать путь для цепочки хода
+        } // генерирует точки из которых будет собран путь для цепочки хода
 
         void GenerateWays(Ellipse ellipse)
         {
@@ -1118,19 +1057,6 @@ namespace CheckersWPF
                 return ",null";
         } // получает тип точки (старт, развилка, конец) / нужно для просчета цепочки путей шашки
 
-        int GetCountWays()
-        {
-            int count = 0;
-
-            foreach (var point in PointWay)
-            {
-                if (point.Split(',')[2] == "end")
-                    count++;
-            }
-
-            return count;
-        } // возвращает индекс конечной точки в пути
-
         bool IsRectangleFree(double x, double y)
         {
             double x2 = 0, y2 = 0;
@@ -1142,6 +1068,7 @@ namespace CheckersWPF
                     return false;
 
             }
+            //сравниваем координаты шашек с координатами потенциального хода
 
             foreach (var item in ellipsesB)
             {
@@ -1309,12 +1236,12 @@ namespace CheckersWPF
 
                     label.Text = "";
                     Write("Счет белых: " + CountKillW);
-                    Write("Счет красных: " + CountKillB);
+                    Write("Счет черных: " + CountKillB);
 
                     if (CountKillB == 12)
                     {
                         label.Text = "";
-                        Write("Выиграли красные!");
+                        Write("Выиграли черные!");
                     }
                     else if (CountKillW == 12)
                     {
@@ -1355,15 +1282,15 @@ namespace CheckersWPF
 
             if (ellipse.Name.Length < 7 && ellipse.Name.Split('_')[1] == "W" && y == 7 && ellipse.StrokeThickness != 2)
             {
-                ellipse.Stroke = new LinearGradientBrush(Color.FromRgb(230, 230, 230), Color.FromRgb(170, 170, 170), new Point(0, 0.5), new Point(0.5, 1));
+                ellipse.Stroke = new LinearGradientBrush(Color.FromRgb(230, 230, 230), Color.FromRgb(170, 170, 170), new Point(0, 0.5), new Point(0.5, 4));
                 ellipse.StrokeThickness = 2;
                 ellipse.Fill = new LinearGradientBrush(Color.FromRgb(150, 150, 150), Color.FromRgb(190, 190, 190), new Point(0, 0.5), new Point(0.5, 1));
             }
             else if (ellipse.Name.Length < 7 && ellipse.Name.Split('_')[1] == "B" && y == 0 && ellipse.StrokeThickness != 2)
             {
-                ellipse.Stroke = new LinearGradientBrush(Color.FromRgb(180, 0, 0), Color.FromRgb(120, 0, 0), new Point(0, 0.5), new Point(0.5, 1));
+                ellipse.Stroke = new LinearGradientBrush(Color.FromRgb(80, 80, 80), Color.FromRgb(0, 0, 0), new Point(0, 0.5), new Point(0.5, 4));
                 ellipse.StrokeThickness = 2;
-                ellipse.Fill = new LinearGradientBrush(Color.FromRgb(100, 0, 0), Color.FromRgb(140, 0, 0), new Point(0, 0.5), new Point(0.5, 1));
+                ellipse.Fill = new LinearGradientBrush(Color.FromRgb(0, 0, 0), Color.FromRgb(60, 60, 60), new Point(0, 0.5), new Point(0.5, 1));
 
             }
 
@@ -1395,7 +1322,11 @@ namespace CheckersWPF
             {
                 try
                 {
-                    handler.Send(Encoding.UTF8.GetBytes(msg));
+                    if ( handler != null)
+                    {
+                        handler.Send(Encoding.UTF8.GetBytes(msg));
+                        CourseWhite = false;
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -1407,6 +1338,7 @@ namespace CheckersWPF
                 try
                 {
                     sender.Send(Encoding.UTF8.GetBytes(msg));
+                    CourseWhite = true;
                 }
                 catch (Exception ex)
                 {
@@ -1434,15 +1366,28 @@ namespace CheckersWPF
             // получает сообщение от сервера
             int bytesRec = sender.Receive(bytes);                           // получает сообщение от сервера
             string serverMsg = Encoding.UTF8.GetString(bytes, 0, bytesRec); // получает сообщение от сервера 
+            side.IsEnabled = false;
 
 
-            if (serverMsg != "connect")
+            if (serverMsg != "connectW" && serverMsg != "connectB")
             {
-                CourseWhite = false;
+                MessageBox.Show(serverMsg);
             }
-            else
+            else if (serverMsg == "connectW")
             {
-                Write("Соединение установленно.\nВы играете красными.");
+
+                _white = false;
+                Write("Соединение установленно.\nВы играете черными.");
+                Thread clientListen = new Thread(ClientListenConnect);
+                clientListen.IsBackground = true;
+                clientListen.Start();
+            }
+            else if (serverMsg == "connectB")
+            {
+
+                _white = true;
+                CourseWhite = false;
+                Write("Соединение установленно.\nВы играете белыми.");
                 Thread clientListen = new Thread(ClientListenConnect);
                 clientListen.IsBackground = true;
                 clientListen.Start();
@@ -1463,18 +1408,26 @@ namespace CheckersWPF
                     byte[] buffer = new byte[1024];
                     int countBytes = sender.Receive(buffer);
                     string msg = Encoding.UTF8.GetString(buffer, 0, countBytes);
-                    Action act = () => {
+
+                    Action act = () =>
+                    {
                         SetPosition(msg);
-                        SwitchCourse(msg);
+
+                        //SwitchCourse(msg);
+                        CourseWhite = false;
+                        ServerBool = false;
                     };
                     Dispatcher.Invoke(act);
+
                 }
+
                 catch (Exception ex)
                 {
+                    CourseWhite = !CourseWhite;
+                    work = false;
                     Write(ex.Message);
                 }
             }
-
             sender.Shutdown(SocketShutdown.Both);
             sender.Close();
 
@@ -1495,17 +1448,29 @@ namespace CheckersWPF
                 return;
             }
 
-            Write("Слушаем " + ip);
+            Write("Ожидаем " + ip);
 
             IPEndPoint ipEndPoint = new IPEndPoint(ipAddr, 33377);
 
             Socket sListener = new Socket(ipAddr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            
             try
             {
 
                 sListener.Bind(ipEndPoint);
                 sListener.Listen(10);
                 handler = sListener.Accept();
+               
+                ServerBool = true;
+                _white = white;
+                if (_white)
+                {
+                    CourseWhite = true;
+                }
+                else
+                {
+                    CourseWhite = false;
+                }
                 while (work)
                 {
                     try
@@ -1514,17 +1479,38 @@ namespace CheckersWPF
                         int bytesRec = handler.Receive(bytes);      //замирает, принимает сообщение 
                         string data = Encoding.UTF8.GetString(bytes, 0, bytesRec);
 
+                      
                         if (data == "connect")
                         {
-                            Action act = () => { Write("Соединение установленно.\nВы играете белыми."); };
-                            Dispatcher.Invoke(act);
-                            handler.Send(Encoding.UTF8.GetBytes("connect"));
+
+                            
+                            if (_white)
+                            {
+                                Action act = () => { side.IsEnabled = false; Write("Соединение установленно.\nВы играете белыми."); };
+                                Dispatcher.Invoke(act);
+                            }
+                            else
+                            {
+                                Action act = () => { side.IsEnabled = false; Write("Соединение установленно.\nВы играете черными."); };
+                                Dispatcher.Invoke(act);
+                            }
+
+                            if (_white)
+                            {
+                                handler.Send(Encoding.UTF8.GetBytes("connectW"));
+                            }
+                            else
+                                handler.Send(Encoding.UTF8.GetBytes("connectB"));
+                   
+                            
                         }
+                        
                         else
                         {
                             Action act = () => {
+                                CourseWhite = true;
                                 SetPosition(data);
-                                SwitchCourse(data);
+                                //SwitchCourse(data);
                             };
                             Dispatcher.Invoke(act);
                         }
@@ -1532,18 +1518,34 @@ namespace CheckersWPF
                     }
                     catch (Exception ex)
                     {
+                        CourseWhite = !CourseWhite;
+                        work = false;
                         Write(ex.Message);
+                  
                     }
 
                 }
 
                 handler.Shutdown(SocketShutdown.Both);
                 handler.Close();
+
             }
             catch (Exception ex)
             {
+
+                
+                Action act = () => { btnC.IsEnabled = true; };
+                ServerBool = false;
+                CourseWhite = true;
+                Dispatcher.Invoke(act);
                 Write(ex.Message);
             }
         }              // создаем все необходимое для работы сервера/ тут же принимает полученные сообщения от клиента
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {       
+                
+                work = false;
+        }
     }
 }
